@@ -1,9 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes.sentiment_analysis import router as sentiment_router
+from app.api.routes.auth import router as auth_router
 
 
 app = FastAPI()
 
+app.include_router(sentiment_router)
+app.include_router(auth_router)
 
 origins = [
     "*",
