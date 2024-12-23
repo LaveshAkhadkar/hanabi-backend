@@ -18,7 +18,7 @@ const Login = () => {
 
     try {
       // Send login request to the backend with FormData
-      const response = await axios.post('http://localhost:8000/auth/login', formData);
+      const response = await axios.post('https://hanabi-backend-ltfq.onrender.com/auth/login', formData);
 
       // Save the access token in localStorage
       localStorage.setItem('access_token', response.data.access_token);

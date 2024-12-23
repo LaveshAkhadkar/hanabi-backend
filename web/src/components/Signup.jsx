@@ -24,7 +24,7 @@ const Signup = () => {
 
     try {
       // Send signup request to the backend using FormData
-      await axios.post('http://localhost:8000/auth/signup', formData, {
+      await axios.post('https://hanabi-backend-ltfq.onrender.com/auth/signup', formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Set proper content type for form data
         },

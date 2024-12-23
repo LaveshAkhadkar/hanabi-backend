@@ -43,7 +43,7 @@ const Dashboard = () => {
     try {
       // Make the POST request for sentiment analysis
       const response = await axios.post(
-        'http://localhost:8000/sentiment/analyze', // Update with your backend endpoint
+        'https://hanabi-backend-ltfq.onrender.com/sentiment/analyze', // Update with your backend endpoint
         formData,
         {
           headers: {
