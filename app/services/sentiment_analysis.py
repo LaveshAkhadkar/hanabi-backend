@@ -1,36 +1,41 @@
-from transformers import pipeline, AutoTokenizer, logging
+import requests
 import pandas as pd
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-logging.set_verbosity_error()
+API_URL = "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment-latest"
+headers = {"Authorization": os.environ.get("HUGGINGFACE_API_KEY")}
 
-# Load model and tokenizer
-sentiment_task = pipeline(
-    "sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest"
-)
-tokenizer = AutoTokenizer.from_pretrained(
-    "cardiffnlp/twitter-roberta-base-sentiment-latest"
-)
 
-MAX_TOKENS = 500
-
+def query(payload):
+    """
+    Query the Hugging Face API with the given payload.
+    """
+    response = requests.post(API_URL, headers=headers, json=payload)
+    response.raise_for_status()  # Raise an error for HTTP issues
+    return response.json()
 
 def analyze_sentiment_batch(texts):
     """
-    Perform sentiment analysis on a batch of texts after truncating each to 500 tokens.
+    Perform sentiment analysis on a batch of texts.
     """
-
-    # Truncate each text to 500 tokens
-    truncated_texts = [
-        tokenizer.decode(
-            tokenizer.encode(text, max_length=MAX_TOKENS, truncation=True),
-            skip_special_tokens=True,
-        )
-        for text in texts
-    ]
-
-    # Perform sentiment analysis
-    sentiments = sentiment_task(truncated_texts)
+    sentiments = []
+    for text in texts:
+        output = query({"inputs": text})
+        if output and isinstance(output, list) and len(output) > 0:
+            # Extract the first element (list of scores) and find the max score
+            sentiment_scores = output[0]  # Get the first list of dictionaries
+            if isinstance(sentiment_scores, list):
+                # Find the label with the highest score
+                best_sentiment = max(sentiment_scores, key=lambda x: x["score"])
+                sentiments.append(best_sentiment["label"])
+            else:
+                sentiments.append("ERROR")
+        else:
+            sentiments.append("ERROR")  # Fallback for unexpected response structure
     return sentiments
+
 
 
 def analyze_sentiments(df: pd.DataFrame):
@@ -43,8 +48,5 @@ def analyze_sentiments(df: pd.DataFrame):
 
     # Perform sentiment analysis
     sentiments = analyze_sentiment_batch(df["text"])
-    sentiment_labels = [result["label"] for result in sentiments]
-
-    # Add sentiment results to the DataFrame
-    df["sentiment"] = sentiment_labels
+    df["sentiment"] = sentiments
     return df
