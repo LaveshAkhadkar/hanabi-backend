@@ -8,3 +8,4 @@ python-dotenv==1.0.1
 python_jose==3.3.0
 transformers==4.45.2
 uvicorn
+tensorflow
